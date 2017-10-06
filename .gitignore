@@ -260,3 +260,7 @@ paket-files/
 __pycache__/
 *.pyc
 /Glue/env
+
+
+# database files shall not be in the repository
+*.db
