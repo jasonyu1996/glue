@@ -11,7 +11,7 @@ from Glue.controls import get_user, gen_password_hash, check_session_token
 from Glue.models import db, User
 from hashlib import sha512
 
-@app.route('/api/v1.0/user/<int:id>', methods = ['GET', 'PUT'])
+@app.route('/api/v1.0/user/<int:id>/', methods = ['GET', 'PUT'])
 def api_user(id):
     if request.method == 'GET': # retrieval of user information
         user = get_user(id)
@@ -79,7 +79,23 @@ def api_user_general(): # retrieves the user list
 
 
         return jsonify(success = True, user = {
-            'name' : user.name,\
-            'email' : user.email,\
-            'id' : user.id\
+            'name' : new_user.name,\
+            'email' : new_user.email,\
+            'id' : new_user.id\
             })
+
+@app.route('/api/v1.0/group/', methods = ['GET', 'POST'])
+def api_group_general():
+    pass
+
+@app.route('/api/v1.0/group/<int:group_id>/', methods = ['GET', 'PUT'])
+def api_group(group_id):
+    pass
+
+@app.route('/api/v1.0/likes/', methods = ['GET', 'POST'])
+def api_likes_general():
+    pass
+
+@app.route('/api/v1.0/likes/<int:likes_id>', methods = ['DELETE'])
+def api_likes(likes_id):
+    pass
