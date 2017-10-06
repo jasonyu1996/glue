@@ -48,6 +48,7 @@
     <Folder Include="Glue\templates\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Glue\config.json" />
     <Content Include="requirements.txt" />
     <Content Include="Glue\static\content\bootstrap.css" />
     <Content Include="Glue\static\content\bootstrap.min.css" />
