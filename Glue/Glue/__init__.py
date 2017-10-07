@@ -16,4 +16,5 @@ import Glue.models
 
 db.create_all()
 
-import Glue.views
+import Glue.resources
+

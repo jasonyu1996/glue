@@ -36,7 +36,7 @@
     </Compile>
     <Compile Include="runserver.py" />
     <Compile Include="Glue\__init__.py" />
-    <Compile Include="Glue\views.py" />
+    <Compile Include="Glue\resources.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Glue\" />
