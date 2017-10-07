@@ -5,6 +5,16 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 
 from Glue import db, app
 
+from flask_restful import fields
+
+
+user_brief_fields = {\
+    'id': fields.Integer,\
+    'name': fields.String,\
+    'email': fields.String\
+   }
+
+# user_brief_list_fields = fields.List(fields.Nested(user_brief_fields))
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
