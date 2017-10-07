@@ -8,7 +8,7 @@ from flask import render_template
 from Glue import app, db
 from flask.json import jsonify
 from Glue.controls import get_user, gen_password_hash, check_session_token
-from Glue.models import db, User, Group, user_brief_fields, user_detailed_fields,\
+from Glue.models import db, User, Group, likes, user_brief_fields, user_detailed_fields,\
     group_brief_fields, group_detailed_fields
 from hashlib import sha512
 
@@ -165,14 +165,64 @@ class GroupListResource(Resource):
 
 api.add_resource(GroupListResource, '/api/v1.0/group/')
 
-class LikesListResource(Resource):
-    def post(self):
-        pass
+class LikesResource(Resource):
+    def post(self, user_id, group_id):
+        # add a new like
+        # authentication required
+        user = check_session_token()
+        if user is None:
+            return '', 401
+        '''
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', required=True, help='The user_id field is required.')
+        parser.add_argument('group_id', required=True, help='The group_id field is required.')
 
-api.add_resource(LikesListResource, '/api/v1.0/likes/')
+        args = parser.parse_args()
+        '''
 
+        if user_id != user.id:
+            # not the same user
+            return '', 403
+
+        group = Group.query.get(group_id)
+        if group is None:
+            return '', 400
+
+        try:
+            user.groups_liked.append(group)
+            db.session.commit()
+        except:
+            return '', 400
+
+        return {'likes' : {
+            'group': marshal(group, group_brief_fields), 'user': marshal(user, user_brief_fields)}},\
+                201
+
+    def delete(self, user_id, group_id):
+        # authentication required
+        user = check_session_token()
+        if user is None:
+            return '', 401
+        if user_id != user.id:
+            # not the same user
+            return '', 403
+        group = Group.query.get(group_id)
+        if group is None:
+            return '', 400
+        user.groups_liked.remove(group)
+        db.session.commit()
+
+        return {'likes' : {
+            'group': marshal(group, group_brief_fields), 'user': marshal(user, user_brief_fields)}},\
+                200
+
+
+api.add_resource(LikesResource, '/api/v1.0/user/<int:user_id>/likes/<int:group_id>/')
+
+'''
 class LikesResource(Resource):
     def delete(self, id):
         pass
 
 api.add_resource(LikesResource, '/api/v1.0/likes/<int:id>/')
+'''
