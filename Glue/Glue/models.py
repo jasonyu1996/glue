@@ -14,6 +14,27 @@ user_brief_fields = {\
     'email': fields.String\
    }
 
+group_brief_fields = {\
+    'id': fields.Integer,\
+    'name': fields.String,\
+    'leader': fields.Nested(user_brief_fields)
+    }
+
+user_detailed_fields = {\
+    'id': fields.Integer, \
+    'name': fields.String, \
+    'email': fields.String,
+    'groups_led': fields.List(fields.Nested(group_brief_fields)),\
+    'groups_liked': fields.List(fields.Nested(group_brief_fields))\
+    }
+
+group_detailed_fields = {\
+    'id': fields.Integer,\
+    'name': fields.String,\
+    'leader': fields.Nested(user_brief_fields),\
+    'users_liking': fields.List(fields.Nested(user_brief_fields))\
+    }
+
 # user_brief_list_fields = fields.List(fields.Nested(user_brief_fields))
 
 likes = db.Table('likes', \
@@ -26,6 +47,11 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     name = db.Column(db.String(50))
     leader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+
+    def __init__(self, name, leader_id):
+        self.name = name
+        self.leader_id = leader_id
+
     
 
 class User(db.Model):

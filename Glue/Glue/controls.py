@@ -7,7 +7,6 @@ from hashlib import sha512
 #               password_hash = None):
 
 
-
 def get_user(id):
     return User.query.get(id)
 

@@ -8,7 +8,8 @@ from flask import render_template
 from Glue import app, db
 from flask.json import jsonify
 from Glue.controls import get_user, gen_password_hash, check_session_token
-from Glue.models import db, User, user_brief_fields
+from Glue.models import db, User, Group, user_brief_fields, user_detailed_fields,\
+    group_brief_fields, group_detailed_fields
 from hashlib import sha512
 
 from flask_restful import marshal, Resource, Api, reqparse
@@ -21,7 +22,7 @@ class UserResource(Resource):
         user = get_user(id)
         if not user:
             return '', 404
-        return {'user':marshal(user, user_brief_fields)}, 200
+        return {'user':marshal(user, user_detailed_fields)}, 200
     def put(self, id): # modification of user information
         # check whether the request is legal
         user = check_session_token()
@@ -66,7 +67,7 @@ class UserListResource(Resource):
     def get(self):
         res = User.query.all()
         list = [marshal(user, user_brief_fields) for user in res]
-        return {'list': list}
+        return {'users': list}
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -90,6 +91,88 @@ class UserListResource(Resource):
         except:
             return '', 400
 
-        return marshal(new_user, user_brief_fields), 201
+        return {'user' : marshal(new_user, user_brief_fields)}, 201
 
 api.add_resource(UserListResource, '/api/v1.0/user/')
+
+class GroupResource(Resource):
+    def get(self, id):
+        group = Group.query.get(id)
+        if group is None:
+            # not found
+            return '', 404
+        return {'group' : marshal(group, group_detailed_fields)}
+
+    def put(self, id):
+        # authentication needed
+        user = check_session_token()
+        if user is None:
+            return '', 401
+        group = Group.query.get(id)
+        if(group is None):
+            return '', 404
+        if group.leader_id != user.id: # the user is not the leader of the group
+            return '', 403
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('name')
+        parser.add_argument('leader_id', type=int)
+        args = parser.parse_args()
+
+        try:
+            if args['name'] is not None:
+                group.name = args['name']
+            if args['leader_id'] is not None:
+                group.leader_id = args['leader_id']
+            db.session.commit()
+        except:
+            return '', 400
+        return {'group' : marshal(group, group_brief_fields)}, 201
+        
+
+api.add_resource(GroupResource, '/api/v1.0/group/<int:id>/')
+
+class GroupListResource(Resource):
+    def get(self):
+        # TODO: pagination should be added
+        res = Group.query.all()
+        list = [marshal(group, group_brief_fields) for group in res]
+        return {'groups' : list}, 200
+
+    def post(self): # create a new group
+         # authentication needed
+        user = check_session_token()
+        if user is None:
+            return '', 401
+        parser = reqparse.RequestParser()
+        parser.add_argument('leader_id', required=True, type=int,\
+           help='The leader_id field is required.')
+        parser.add_argument('name', required=True, help='The name field is required.')
+        args = parser.parse_args()
+
+        if args['leader_id'] != user.id:
+            return '', 403 # not the leader
+
+        try:
+            new_group = Group(args['name'], args['leader_id'])
+            db.session.add(new_group)
+            db.session.commit()
+        except:
+            return '', 400
+
+        return {'group' : marshal(new_group, group_brief_fields)}, 201
+
+
+api.add_resource(GroupListResource, '/api/v1.0/group/')
+
+class LikesListResource(Resource):
+    def post(self):
+        pass
+
+api.add_resource(LikesListResource, '/api/v1.0/likes/')
+
+class LikesResource(Resource):
+    def delete(self, id):
+        pass
+
+api.add_resource(LikesResource, '/api/v1.0/likes/<int:id>/')
